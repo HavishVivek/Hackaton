@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() => runApp(const ThemeToggleApp());
 
@@ -25,7 +27,7 @@ class ThemeToggleWidget extends StatefulWidget {
 class _ThemeToggleWidgetState extends State<ThemeToggleWidget> {
   ThemeMode _themeMode = ThemeMode.light;
 
-  void _toggleTheme(ThemeMode mode) {
+  void  x(ThemeMode mode) {
     setState(() {
       _themeMode = mode;
     });
@@ -63,10 +65,7 @@ class _ThemeToggleWidgetState extends State<ThemeToggleWidget> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SettingsPage(
-                            themeMode: _themeMode,
-                            onThemeChanged: _toggleTheme,
-                          ),
+                          builder: (context) => const SettingsPage(),
                         ),
                       );
                     },
@@ -79,7 +78,14 @@ class _ThemeToggleWidgetState extends State<ThemeToggleWidget> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.person),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
+                    },
                   ),
                   const Text('Login'),
                 ],
@@ -92,70 +98,108 @@ class _ThemeToggleWidgetState extends State<ThemeToggleWidget> {
   }
 }
 
-class SettingsPage extends StatefulWidget {
-  final ThemeMode themeMode;
-  final ValueChanged<ThemeMode> onThemeChanged;
-
-  const SettingsPage({
-    super.key,
-    required this.themeMode,
-    required this.onThemeChanged,
-  });
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  late ThemeMode _selectedThemeMode;
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedThemeMode = widget.themeMode;
+  Future<void> _login() async {
+    String username = _usernameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    // Make a POST request to your Python backend for login validation
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:5000/login'), // Replace with your Python API endpoint
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['status'] == 'success') {
+          // Navigate to main app or dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ThemeToggleWidget()),
+          );
+        } else {
+          // Show error message
+          _showErrorDialog('Invalid credentials');
+        }
+      } else {
+        _showErrorDialog('Failed to connect to the server');
+      }
+    } catch (e) {
+      _showErrorDialog('Error: $e');
+    }
   }
 
-  void _showThemeSelectionDialog() {
+  void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Theme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Light Mode'),
-              leading: Radio<ThemeMode>(
-                value: ThemeMode.light,
-                groupValue: _selectedThemeMode,
-                onChanged: (ThemeMode? value) {
-                  setState(() {
-                    _selectedThemeMode = value!;
-                  });
-                  Navigator.pop(context);
-                  widget.onThemeChanged(_selectedThemeMode); // Apply theme change immediately
-                },
-              ),
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Username'),
             ),
-            ListTile(
-              title: const Text('Dark Mode'),
-              leading: Radio<ThemeMode>(
-                value: ThemeMode.dark,
-                groupValue: _selectedThemeMode,
-                onChanged: (ThemeMode? value) {
-                  setState(() {
-                    _selectedThemeMode = value!;
-                  });
-                  Navigator.pop(context);
-                  widget.onThemeChanged(_selectedThemeMode); // Apply theme change immediately
-                },
-              ),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              child: const Text('Login'),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +208,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Settings',
@@ -172,7 +215,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _showThemeSelectionDialog,
+              onPressed: () {},
               child: const Text('Select Theme'),
             ),
           ],
