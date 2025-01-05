@@ -27,7 +27,7 @@ class ThemeToggleWidget extends StatefulWidget {
 class _ThemeToggleWidgetState extends State<ThemeToggleWidget> {
   ThemeMode _themeMode = ThemeMode.light;
 
-  void  x(ThemeMode mode) {
+  void _toggleTheme(ThemeMode mode) {
     setState(() {
       _themeMode = mode;
     });
