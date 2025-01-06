@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 void main() => runApp(const ThemeToggleApp());
 
@@ -110,40 +108,29 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _login() async {
+  // Simulated user data for validation
+  final Map<String, String> _userData = {
+    'username': 'testuser',
+    'email': 'test@example.com',
+    'password': 'password123',
+  };
+
+  void _login() {
     String username = _usernameController.text;
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    // Make a POST request to your Python backend for login validation
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost:5000/login'), // Replace with your Python API endpoint
-        headers: {"Content-Type": "application/json"},
-        body: json.encode({
-          'username': username,
-          'email': email,
-          'password': password,
-        }),
+    if (username == _userData['username'] &&
+        email == _userData['email'] &&
+        password == _userData['password']) {
+      // Login successful, navigate back or to a dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ThemeToggleWidget()),
       );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['status'] == 'success') {
-          // Navigate to main app or dashboard
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ThemeToggleWidget()),
-          );
-        } else {
-          // Show error message
-          _showErrorDialog('Invalid credentials');
-        }
-      } else {
-        _showErrorDialog('Failed to connect to the server');
-      }
-    } catch (e) {
-      _showErrorDialog('Error: $e');
+    } else {
+      // Show error message
+      _showErrorDialog('Invalid credentials. Please try again.');
     }
   }
 
