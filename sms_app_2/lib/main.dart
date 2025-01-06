@@ -172,21 +172,69 @@ class LoginPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: const <Widget>[
-            TextField(
+          children: <Widget>[
+            const TextField(
               decoration: InputDecoration(labelText: 'Username'),
             ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
+            const TextField(
               obscureText: true,
               decoration: InputDecoration(labelText: 'Password'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: null, // Add your login logic here
-              child: Text('Login'),
+              child: const Text('Login'),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
+                );
+              },
+              child: const Text("Don't have an account? Register here!"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RegisterPage extends StatelessWidget {
+  const RegisterPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Register')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Register Page',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Email'),
+            ),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Username'),
+            ),
+            const TextField(
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Password'),
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: null, // Add your registration logic here
+                child: const Text('Register Now'),
+              ),
             ),
           ],
         ),
