@@ -1,13 +1,14 @@
 import mysql.connector
 from mysql.connector import Error
 
+
 def check_user_in_database(username):
     try:
         connection = mysql.connector.connect(
             host="localhost",
             user="root",
             password="gammer0624",  # Replace with your root password
-            database="test_db"
+            database="login",
         )
         if connection.is_connected():
             cursor = connection.cursor()
@@ -25,5 +26,6 @@ def check_user_in_database(username):
             cursor.close()
             connection.close()
 
+
 # Test the function
-check_user_in_database("gammer0624")
+check_user_in_database("havish")
