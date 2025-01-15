@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-void main() => runApp(const ThemeToggleApp());
+void main() {
+  runApp(ThemeToggleApp());
+}
 
 class ThemeToggleApp extends StatefulWidget {
   const ThemeToggleApp({super.key});
@@ -56,7 +60,15 @@ class ThemeToggleWidget extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.upload),
-                  onPressed: () {},
+                  onPressed: () {
+                    // Show Spam Detector Screen when SMS Threat is pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SpamDetectorScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const Text('SMS Threat'),
               ],
@@ -97,6 +109,71 @@ class ThemeToggleWidget extends StatelessWidget {
                 ),
                 const Text('Login'),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SpamDetectorScreen extends StatefulWidget {
+  @override
+  _SpamDetectorScreenState createState() => _SpamDetectorScreenState();
+}
+
+class _SpamDetectorScreenState extends State<SpamDetectorScreen> {
+  final TextEditingController _controller = TextEditingController();
+  String _result = "";
+
+  Future<void> _detectSpam(String message) async {
+    final url = Uri.parse('http://192.168.1.212:5001/predict'); // Replace <your_ip> with your backend's IP
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'message': message}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      setState(() {
+        _result = responseData['prediction'];
+      });
+    } else {
+      setState(() {
+        _result = "Error: Unable to classify the message.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Spam Detector'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter a message',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                _detectSpam(_controller.text);
+              },
+              child: Text('Detect Spam'),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Result: $_result',
+              style: TextStyle(fontSize: 18),
             ),
           ],
         ),
